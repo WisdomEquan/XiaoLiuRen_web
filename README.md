@@ -39,7 +39,7 @@
 
 # 参考
 
-[十分钟学会『掐指一算』的占卜术，太简单了，看完就会！Master Finger Forecasting Method in 10 mins]: https://www.youtube.com/watch?v=zg-EmEvwLYM&amp;t=300s
+[十分钟学会『掐指一算』的占卜术，太简单了，看完就会！Master Finger Forecasting Method in 10 mins](https://www.youtube.com/watch?v=zg-EmEvwLYM&t=300s)
 
 
 
