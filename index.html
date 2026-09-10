@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="小六壬快速起盘">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="小六壬.ico">
+  <link rel="stylesheet" href="style.css">
+  <title>小六壬</title>
+</head>
+<body>
+  <main class="app" aria-label="小六壬快速起盘">
+    <section class="gua-grid" aria-label="六个果位">
+      <div class="gua bad" data-gua="留连">留连</div>
+      <div class="gua good" data-gua="速喜">速喜</div>
+      <div class="gua bad" data-gua="赤口">赤口</div>
+      <div class="gua good" data-gua="大安">大安</div>
+      <div class="gua bad" data-gua="空亡">空亡</div>
+      <div class="gua good" data-gua="小吉">小吉</div>
+    </section>
+
+    <div id="solar" class="time-line">—</div>
+    <div id="lunar" class="time-line">—</div>
+
+    <div id="result" class="result">天：—、地：—、人：—</div>
+
+    <input id="input" class="time-input" type="text" inputmode="numeric"
+           autocomplete="off" spellcheck="false" placeholder="输入指定时间：2025.12.11.21"
+           aria-label="输入指定阳历时间">
+  </main>
+  <script src="app.js?v=3"></script>
+</body>
+</html>
