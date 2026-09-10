@@ -108,13 +108,29 @@ const referenceNow = new Date();
 document.querySelector("#solar").textContent = solarText(referenceNow);
 updateLunarAndPan(referenceNow);
 
-document.querySelector("#input").addEventListener("keydown", event => {
-  if (event.key !== "Enter") return;
+const timeInput = document.querySelector("#input");
+
+function runInputPan() {
+  const value = timeInput.value.trim();
+  if (!value) return;
+
   try {
-    updateLunarAndPan(parseInput(event.target.value));
+    updateLunarAndPan(parseInput(value));
   } catch (e) {
     alert(e.message);
   }
+}
+
+// 桌面浏览器：回车直接起盘。
+timeInput.addEventListener("keydown", event => {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    runInputPan();
+  }
 });
 
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=3').catch(() => {});
+// iOS Safari：输入框显示“完成”时，通常是结束编辑并触发 change，
+// 不一定产生传统的 Enter/keydown 事件，因此这里同时处理 change。
+timeInput.addEventListener("change", runInputPan);
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=4').catch(() => {});
