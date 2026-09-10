@@ -55,6 +55,75 @@ function getLunarYear(parts, solarYear) {
   return solarYear;
 }
 
+function isIOS() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+         (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+}
+
+// iOS Safari 专用农历字段解析。
+// 不修改桌面/Android 原有逻辑；这里只处理 iOS Intl 返回的中文月份字段，
+// 例如“正”“冬”“腊”，以及可能带“月/闰”的形式。
+function parseChineseNumberIOS(s) {
+  s = String(s || "").replace(/\s+/g, "").replace(/月$/u, "");
+  const monthNames = {
+    "正": 1,
+    "冬": 11,
+    "腊": 12
+  };
+  if (monthNames[s] !== undefined) return monthNames[s];
+
+  // iOS 可能返回完整中文数字月份，沿用独立的中文数字解析。
+  const direct = {
+    "一": 1, "二": 2, "三": 3, "四": 4, "五": 5, "六": 6,
+    "七": 7, "八": 8, "九": 9, "十": 10, "十一": 11, "十二": 12,
+    "十三": 13, "十四": 14, "十五": 15, "十六": 16, "十七": 17,
+    "十八": 18, "十九": 19, "二十": 20, "廿一": 21, "廿二": 22,
+    "廿三": 23, "廿四": 24, "廿五": 25, "廿六": 26, "廿七": 27,
+    "廿八": 28, "廿九": 29, "三十": 30
+  };
+  if (direct[s] !== undefined) return direct[s];
+  if (/^\d+$/.test(s)) return Number(s);
+  throw new Error("无法解析农历字段：" + s);
+}
+
+function lunarFromSolarIOS(year, month, day) {
+  const date = new Date(year, month - 1, day, 12, 0, 0);
+  const formatter = new Intl.DateTimeFormat("zh-CN-u-ca-chinese", {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric"
+  });
+  const parts = formatter.formatToParts(date);
+  const get = type => parts.find(p => p.type === type)?.value || "";
+
+  const monthText = get("month");
+  const dayText = get("day");
+
+  // iOS 的农历年份字段处理保持独立；优先使用 relatedYear，
+  // 没有时使用 year，再用干支年换算。
+  const related = parts.find(p => p.type === "relatedYear")?.value;
+  let lunarYear = related && /^\d+$/.test(related) ? Number(related) : null;
+  if (lunarYear === null) {
+    const yearText = get("year");
+    if (/^\d+$/.test(yearText)) lunarYear = Number(yearText);
+  }
+  if (lunarYear === null) {
+    const yearName = parts.find(p => p.type === "yearName")?.value || get("year");
+    lunarYear = cyclicalYearToGregorianYear(yearName, year);
+  }
+  if (lunarYear === null) lunarYear = year;
+
+  const lunarMonth = parseChineseNumberIOS(monthText);
+  const lunarDay = parseChineseNumberIOS(dayText);
+
+  return {
+    lunarYear,
+    lunarMonth,
+    lunarDay,
+    leap: /闰/.test(monthText)
+  };
+}
+
 function lunarFromSolar(year, month, day) {
   const date = new Date(year, month - 1, day, 12, 0, 0);
   const formatter = new Intl.DateTimeFormat("zh-CN-u-ca-chinese", {
@@ -98,7 +167,9 @@ function parseInput(text) {
 }
 
 function updateLunarAndPan(date) {
-  const lunar = lunarFromSolar(date.getFullYear(), date.getMonth()+1, date.getDate());
+  const lunar = isIOS()
+    ? lunarFromSolarIOS(date.getFullYear(), date.getMonth()+1, date.getDate())
+    : lunarFromSolar(date.getFullYear(), date.getMonth()+1, date.getDate());
   const p = pan(lunar.lunarMonth, lunar.lunarDay, date.getHours());
   document.querySelector("#lunar").textContent = `${lunar.lunarYear}年${lunarText(lunar, p.shichen)}`;
   document.querySelector("#result").textContent = `天：${p.tian}、地：${p.di}、人：${p.ren}`;
